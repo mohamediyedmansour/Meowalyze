@@ -37,11 +37,11 @@ from utils.media_helpers import extract_video_frame, sample_pdf_text, sample_fil
 
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+print(GEMINI_API_KEY)
 if not GEMINI_API_KEY:
     raise RuntimeError("Please set GEMINI_API_KEY in your environment")
 
-genai.configure(api_key=GEMINI_API_KEY)
-client = genai.Client()
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 console = Console() if Console else None
 
@@ -111,12 +111,13 @@ def process_file(path: str) -> dict:
     # Build prompt for AI
     json_snippet = json.dumps(res, indent=2, ensure_ascii=False)
     prompt = f"""
-You are a friendly file analysis assistant. Summarize the following file metadata in human-friendly terms.
+You are a file analysis assistant. Summarize the following file metadata in human-friendly terms.
 - Highlight the file type, size, entropy, potential unusual properties.
 - Use emojis and bullet points.
 - Only include important information, ignore trivial details.
 - If it's an image/video, summarize its content briefly.
 - If it's a PDF/text, summarize content snippets.
+- Do not be overly childish be a professional and consistent summarizer.
 File: {os.path.basename(path)}
 Metadata:
 {json_snippet}
