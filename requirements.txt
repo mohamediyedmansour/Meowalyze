@@ -1,4 +1,3 @@
-openai
 python-dotenv
 python-magic 
 Pillow 
@@ -6,3 +5,11 @@ piexif
 exifread 
 PyPDF2 
 mutagen
+google
+opencv-python
+tqdm
+ffmpeg-python
+rich
+google-genai
+numpy
+scipy
