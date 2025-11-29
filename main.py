@@ -1,6 +1,8 @@
 import os
 import sys
 import json
+import base64
+from typing import Any
 import argparse
 import tempfile
 import zipfile
@@ -8,6 +10,7 @@ import shutil
 import concurrent.futures
 from pathlib import Path
 from functools import partial
+from datetime import datetime
 
 from dotenv import load_dotenv
 import mimetypes
@@ -37,13 +40,25 @@ from utils.media_helpers import extract_video_frame, sample_pdf_text, sample_fil
 
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-print(GEMINI_API_KEY)
 if not GEMINI_API_KEY:
     raise RuntimeError("Please set GEMINI_API_KEY in your environment")
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 console = Console() if Console else None
+
+
+def bytes_to_serializable(obj: Any) -> Any:
+    """Recursively convert bytes in dict/list to base64 strings for JSON serialization."""
+    if isinstance(obj, dict):
+        return {k: bytes_to_serializable(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [bytes_to_serializable(x) for x in obj]
+    elif isinstance(obj, bytes):
+        return base64.b64encode(obj).decode("ascii")
+    else:
+        return obj
+
 
 # ----------------------------
 # Gemini Helper
@@ -71,6 +86,7 @@ def send_to_gemini(prompt: str, parts: list = None, max_retries=3) -> str:
 # ----------------------------
 # File Processing
 # ----------------------------
+
 def process_file(path: str) -> dict:
     """Analyze file, generate AI summary, return structured result"""
     try:
@@ -94,7 +110,7 @@ def process_file(path: str) -> dict:
     if res.get("subtype") == "pdf":
         try:
             pdf_sample = sample_pdf_text(path, max_pages=2)
-            res["metadata"]["pdf_sample"] = pdf_sample
+            res.setdefault("metadata", {})["pdf_sample"] = pdf_sample
         except Exception as e:
             res.setdefault("analysis", []).append(f"PDF sampling failed: {e}")
 
@@ -108,16 +124,20 @@ def process_file(path: str) -> dict:
         except Exception as e:
             res.setdefault("analysis", []).append(f"Video frame extraction failed: {e}")
 
+    # Convert any bytes in res to JSON-serializable strings
+    res_serializable = bytes_to_serializable(res)
+    json_snippet = json.dumps(res_serializable, indent=2, ensure_ascii=False)
+
     # Build prompt for AI
-    json_snippet = json.dumps(res, indent=2, ensure_ascii=False)
     prompt = f"""
 You are a file analysis assistant. Summarize the following file metadata in human-friendly terms.
+The current date is {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 - Highlight the file type, size, entropy, potential unusual properties.
 - Use emojis and bullet points.
 - Only include important information, ignore trivial details.
 - If it's an image/video, summarize its content briefly.
 - If it's a PDF/text, summarize content snippets.
-- Do not be overly childish be a professional and consistent summarizer.
+- Do not be overly childish; be a professional and consistent summarizer.
 File: {os.path.basename(path)}
 Metadata:
 {json_snippet}
@@ -125,7 +145,8 @@ Metadata:
 
     summary = send_to_gemini(prompt, parts=parts)
 
-    return {"path": path, "summary": summary, "important_metadata": res}
+    return {"path": path, "summary": summary, "important_metadata": res.get("metadata", {})}
+
 
 # ----------------------------
 # ZIP/TAR Handling
