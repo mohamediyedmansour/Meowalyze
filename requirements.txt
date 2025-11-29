@@ -1,0 +1,8 @@
+openai
+python-dotenv
+python-magic 
+Pillow 
+piexif 
+exifread 
+PyPDF2 
+mutagen
