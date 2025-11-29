@@ -2,7 +2,7 @@
 
 # 🐾 Meowlyze - Ultimate File Analyzer with Google Gemini AI
 
-![Screenshot Placeholder](screenshot.png)
+![Screenshot Placeholder](https://github.com/mohamediyedmansour/Meowalyze/blob/main/screenshot/screenshot.png?raw=true)
 
 **Website/Blog:** [https://blog.iyed.space](https://blog.iyed.space)
 
@@ -185,7 +185,7 @@ MIT License
 **Author:** Iyed Mansour  
 **Email:** me@iyed.space  
 **Blog:** [https://blog.iyed.space](https://blog.iyed.space)  
-**GitHub:** [https://github.com/yourusername/Meowlyze](https://github.com/yourusername/Meowlyze)
+**GitHub:** [https://github.com/mohamediyedmansour/Meowlyze](https://github.com/mohamediyedmansour/Meowlyze)
 
 ---
 
