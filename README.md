@@ -1,4 +1,4 @@
-# Meowlyze README
+# Meowlyze 🐱
 
 # 🐾 Meowlyze - Ultimate File Analyzer with Google Gemini AI
 
